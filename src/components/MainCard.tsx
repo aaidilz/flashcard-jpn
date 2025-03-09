@@ -8,7 +8,7 @@ interface Card {
   hiragana: string;
   kanji: string;
   katakana: string;
-  romanji: string;
+  romaji: string;
   bahasa: string;
 }
 
@@ -74,7 +74,7 @@ function MainCard() {
                       ? cards[index].bahasa
                       : ""
                     : cards.length > 0
-                    ? cards[index].romanji
+                    ? cards[index].romaji
                     : ""}
                 </p>
                 <Button

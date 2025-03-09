@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Modal, Form } from "react-bootstrap";
+import { Table, Button, Modal, Form, Alert } from "react-bootstrap";
 import CardDataService from "../services/card";
 
 interface Card {
@@ -7,22 +7,22 @@ interface Card {
   hiragana: string;
   kanji: string;
   katakana: string;
-  romanji: string;
+  romaji: string;
   bahasa: string;
 }
 
 const CrudCard = () => {
   const [cards, setCards] = useState<Card[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState<string>(""); // State untuk menampilkan error
   const [currentCard, setCurrentCard] = useState<Card>({
     hiragana: "",
     kanji: "",
     katakana: "",
-    romanji: "",
+    romaji: "",
     bahasa: "",
   });
 
-  // Ambil data dari Firebase
   useEffect(() => {
     fetchCards();
   }, []);
@@ -32,23 +32,35 @@ const CrudCard = () => {
     setCards(data.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Card)));
   };
 
-  // Handle input perubahan
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCurrentCard({ ...currentCard, [e.target.name]: e.target.value });
   };
 
-  // Tambah atau update card
   const handleSave = async () => {
+    // Cek apakah semua field terisi
+    if (
+      !currentCard.kanji ||
+      !currentCard.hiragana ||
+      !currentCard.katakana ||
+      !currentCard.romaji ||
+      !currentCard.bahasa
+    ) {
+      setError("Semua field harus diisi!");
+      return;
+    }
+
+    setError(""); // Reset error jika validasi lolos
+
     if (currentCard.id) {
       await CardDataService.updateCard(currentCard.id, currentCard);
     } else {
       await CardDataService.addCards(currentCard);
     }
+
     setShowModal(false);
     fetchCards();
   };
 
-  // Hapus card
   const handleDelete = async (id: string) => {
     await CardDataService.deleteCard(id);
     fetchCards();
@@ -64,9 +76,10 @@ const CrudCard = () => {
             hiragana: "",
             kanji: "",
             katakana: "",
-            romanji: "",
+            romaji: "",
             bahasa: "",
           });
+          setError(""); // Reset error saat membuka modal
           setShowModal(true);
         }}
       >
@@ -79,7 +92,7 @@ const CrudCard = () => {
             <th>Kanji</th>
             <th>Hiragana</th>
             <th>Katakana</th>
-            <th>Romanji</th>
+            <th>Romaji</th>
             <th>Bahasa</th>
             <th>Aksi</th>
           </tr>
@@ -90,7 +103,7 @@ const CrudCard = () => {
               <td>{card.kanji}</td>
               <td>{card.hiragana}</td>
               <td>{card.katakana}</td>
-              <td>{card.romanji}</td>
+              <td>{card.romaji}</td>
               <td>{card.bahasa}</td>
               <td>
                 <Button
@@ -98,6 +111,7 @@ const CrudCard = () => {
                   className="me-2"
                   onClick={() => {
                     setCurrentCard(card);
+                    setError(""); // Reset error saat edit
                     setShowModal(true);
                   }}
                 >
@@ -120,6 +134,8 @@ const CrudCard = () => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {error && <Alert variant="danger">{error}</Alert>}{" "}
+          {/* Alert jika ada error */}
           <Form>
             <Form.Group className="mb-2">
               <Form.Label>Kanji</Form.Label>
@@ -149,11 +165,11 @@ const CrudCard = () => {
               />
             </Form.Group>
             <Form.Group className="mb-2">
-              <Form.Label>Romanji</Form.Label>
+              <Form.Label>Romaji</Form.Label>
               <Form.Control
                 type="text"
-                name="romanji"
-                value={currentCard.romanji}
+                name="romaji"
+                value={currentCard.romaji}
                 onChange={handleChange}
               />
             </Form.Group>
