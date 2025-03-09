@@ -11,22 +11,19 @@ import {
   QuerySnapshot,
 } from "firebase/firestore";
 
-// Definisi tipe data untuk kartu
-interface Card {
-  title: string;
-  description: string;
-}
-
 const cardCollectionRef = collection(db, "cards");
 
 class CardDataService {
   // Menambahkan kartu baru
-  addCards = (newCard: Card): Promise<DocumentData> => {
+  addCards = (newCard: DocumentData): Promise<DocumentData> => {
     return addDoc(cardCollectionRef, newCard);
   };
 
   // Memperbarui kartu berdasarkan ID
-  updateCard = (id: string, updatedCard: Partial<Card>): Promise<void> => {
+  updateCard = (
+    id: string,
+    updatedCard: Partial<DocumentData>
+  ): Promise<void> => {
     const cardDoc = doc(db, "cards", id);
     return updateDoc(cardDoc, updatedCard);
   };
